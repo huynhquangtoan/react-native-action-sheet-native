@@ -1,0 +1,31 @@
+{
+  "name": "react-native-action-sheet-native",
+  "version": "0.0.1",
+  "description": "ActionSheet for React Native support IOS and Android",
+  "main": "index.js",
+  "author": "ToanHQ <toanhq04@gmail.com> (https://huynhgia.pro)",
+  "homepage":
+    "https://github.com/huynhquangtoan/react-native-action-sheet-native",
+  "keywords": [
+    "react",
+    "android",
+    "react native",
+    "actionsheet",
+    "actionsheet native android",
+    "actionsheet android like ios",
+    "react native",
+    "react native actionsheet",
+    "react native action sheet"
+  ],
+  "license": "SEE LICENSE IN LICENSE",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "bugs": {
+    "url": ""
+  }
+}
