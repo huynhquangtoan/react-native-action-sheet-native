@@ -6,6 +6,16 @@ const AndroidActionSheet = NativeModules.AndroidActionSheet
 const isIOS = Platform.OS === 'ios'
 const ActionSheetNaive = isIOS ? ActionSheetIOS : AndroidActionSheet
 
+const optionNames = [
+  'title',
+  'message',
+  'options',
+  'tintColor',
+  'cancelButtonIndex',
+  'destructiveButtonIndex',
+  'anchor',
+]
+
 export default class ActionSheet extends React.Component {
   componentDidMount() {
     const options = this.props.options
@@ -26,6 +36,7 @@ export default class ActionSheet extends React.Component {
       cancelButtonIndex,
       destructiveButtonIndex,
       anchor,
+      onPress,
     } = this.props
     let params = { ...this.props }
     if (isIOS)
@@ -48,22 +59,22 @@ export default class ActionSheet extends React.Component {
             btnTitleColor: tintColor
               ? tintColor
               : index === destructiveButtonIndex ? '#fc3d39' : '#157efb',
+            btnIndex: index,
           })
         }
       })
       params = {
         title: customTitle,
         optionBtns: optionBtns,
+        cancelButtonIndex: cancelButtonIndex,
       }
-      console.log(cancelButtonIndex)
-
       if (
         typeof cancelButtonIndex !== 'undefined' &&
         cancelButtonIndex !== null
       ) {
         params.cancelBtn = cancelBtn
       }
-      ActionSheetNaive.showActionSheetWithCustomOptions(params, props.onPress)
+      ActionSheetNaive.showActionSheetWithCustomOptions(params, onPress)
     }
   }
   render() {

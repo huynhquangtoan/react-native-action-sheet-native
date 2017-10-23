@@ -2,6 +2,7 @@ package pro.huynhgia.actionsheet;
 
 import android.app.Activity;
 import android.graphics.Color;
+import android.util.Log;
 
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -31,7 +32,7 @@ public class ActionSheetModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void showActionSheetWithCustomOptions(ReadableMap params, final Callback callback) {
+    public void showActionSheetWithCustomOptions(final ReadableMap params, final Callback callback) {
         Activity activity = getCurrentActivity();
         if (activity == null)
             return;
@@ -54,6 +55,9 @@ public class ActionSheetModule extends ReactContextBaseJavaModule {
 
         int cancelBtnIndex = -1;
         if (params.hasKey("optionBtns")) {
+            if (params.hasKey("cancelButtonIndex")) {
+                cancelBtnIndex = params.getInt("cancelButtonIndex");
+            }
             ReadableArray optionBtns = params.getArray("optionBtns");
             int size = optionBtns.size();
             String[] titles = new String[size];
@@ -70,7 +74,9 @@ public class ActionSheetModule extends ReactContextBaseJavaModule {
             cancelBtnIndex = size;
             builder.setOtherBtn(titles, colors);
         }
-
+        if (params.hasKey("cancelButtonIndex")) {
+            cancelBtnIndex = params.getInt("cancelButtonIndex");
+        }
         if (params.hasKey("cancelBtn")) {
             ReadableMap cancelBtn = params.getMap("cancelBtn");
             String title = cancelBtn.getString("btnTitle");
@@ -94,8 +100,20 @@ public class ActionSheetModule extends ReactContextBaseJavaModule {
 
             @Override
             public void onButtonClicked(ActionSheet actionSheet, int index) {
-                if (callback != null)
-                    callback.invoke(index);
+                try {
+                    ReadableArray optionBtns = params.getArray("optionBtns");
+                    if (index >= optionBtns.size() && callback != null) {
+                        callback.invoke(tempCancelBtnIndex);
+                        return;
+                    }
+                    if (callback != null) {
+                        ReadableMap btn = optionBtns.getMap(index);
+                        callback.invoke(btn.getInt("btnIndex"));
+                        return;
+                    }
+                } catch (Exception e) {
+                    Log.e("Error", String.valueOf(e));
+                }
             }
         });
         ActionSheet actionSheet = builder.build();
