@@ -2,9 +2,8 @@
 
 import React from 'react'
 import { Platform, ActionSheetIOS, NativeModules } from 'react-native'
-const AndroidActionSheet = NativeModules.AndroidActionSheet
 const isIOS = Platform.OS === 'ios'
-const ActionSheetNaive = isIOS ? ActionSheetIOS : AndroidActionSheet
+const ActionSheetNative = isIOS ? ActionSheetIOS : NativeModules.ActionSheet
 
 const optionNames = [
   'title',
@@ -13,68 +12,74 @@ const optionNames = [
   'tintColor',
   'cancelButtonIndex',
   'destructiveButtonIndex',
-  'anchor',
 ]
 
-export default class ActionSheet extends React.Component {
+type Props = {
+  title?: string,
+  message?: string,
+  options: Array<string>,
+  tintColor?: string,
+  cancelButtonIndex?: number,
+  destructiveButtonIndex?: number,
+  onPress: Function,
+};
+
+export default class ActionSheet extends React.Component<Props> {
   componentDidMount() {
     const options = this.props.options
     if (!this.isArray(options) || options.length === 0) {
       throw Error('Prop `options` must be an array and it must not be empty.')
     }
   }
+  shouldComponentUpdate() {
+    return false // handle on native thread only
+  }
   isArray(obj) {
     return Object.prototype.toString.call(obj) === '[object Array]'
   }
   show() {
-    let props = this.props
     const {
       title,
-      message,
       options,
       tintColor,
       cancelButtonIndex,
       destructiveButtonIndex,
-      anchor,
       onPress,
+      message
     } = this.props
-    let params = { ...this.props }
-    if (isIOS)
-      ActionSheetNaive.showActionSheetWithOptions(params, props.onPress)
+    if (isIOS) {
+      ActionSheetNative.showActionSheetWithOptions({ ...this.props }, onPress)
+    }
     else {
-      let customTitle = {
-        title: title,
-        titleColor: '#8f8f8f',
-      }
-      let cancelBtn = {
-        btnTitle: options[cancelButtonIndex],
-        btnTitleColor: tintColor ? tintColor : '#157efb',
-      }
-
-      let optionBtns = []
-      options.map((item, index) => {
+      const items = []
+      options.forEach((option, index) => {
         if (index !== cancelButtonIndex) {
-          optionBtns.push({
-            btnTitle: item,
-            btnTitleColor: tintColor
-              ? tintColor
-              : index === destructiveButtonIndex ? '#fc3d39' : '#157efb',
-            btnIndex: index,
+          items.push({
+            title: option
           })
         }
-      })
-      params = {
-        title: customTitle,
-        optionBtns: optionBtns,
-        cancelButtonIndex: cancelButtonIndex,
-      }
-      if (
-        typeof cancelButtonIndex !== 'undefined' &&
-        cancelButtonIndex !== null
-      ) {
-        params.cancelBtn = cancelBtn
-      }
-      ActionSheetNaive.showActionSheetWithCustomOptions(params, onPress)
+      });
+      ActionSheetNative.SheetView(
+        {
+          title: title,
+          items: items,
+          titleTextColor: '#000000',
+          itemTextColor: '#000000',
+          itemTintColor: tintColor || '#000000',
+          backgroundColor: '#FFFFFF',
+          delayDismissOnItemClick: false,
+        },
+        selectedIndex => {
+          if (typeof cancelButtonIndex !== 'undefined' && cancelButtonIndex !== null) {
+            onPress(selectedIndex + 1)
+          } else {
+            onPress(selectedIndex)
+          }
+        },
+        () => {
+          onPress(cancelButtonIndex)
+        }
+      );
     }
   }
   render() {
